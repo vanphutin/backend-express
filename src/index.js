@@ -10,6 +10,14 @@ const api_router_v1 = require("./apis/v1/routers/index.router");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Middleware requestLogger
+const {
+  requestLogger,
+  errorLogger,
+} = require("./apis/v1/middlewares/logger.middleware");
+app.use(requestLogger);
+app.use(errorLogger);
+
 // Cấu hình CORS
 const whitelist = ["http://localhost:3000", "http://localhost:4000"];
 const corsOptions = {
