@@ -1,13 +1,13 @@
 const mysql = require("mysql2");
-require("dotenv").config();
+const config = require("./config.js");
 
 const pool = mysql.createPool({
   queueLimit: 10,
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  user: process.env.DB_USER,
+  host: config.db.host,
+  port: config.db.port,
+  user: config.db.user,
+  password: config.db.pass,
+  database: config.db.database,
 });
 
 module.exports = pool;

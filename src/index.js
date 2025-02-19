@@ -1,54 +1,55 @@
-require("dotenv").config({ path: "./src/.env" });
+require("dotenv").config({
+  path: `./src/.env.${process.env.NODE_ENV || "development"}`,
+});
+
 const express = require("express");
 const cors = require("cors");
-const PORT = process.env.PORT;
 const database = require("./config/database.conf");
 const api_router_v1 = require("./apis/v1/routers/index.router");
+
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-// - start: CORS configuration
-var whitelist = ["http://localhost:3000", "http://localhost:4000"];
-
-var corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
+// Cấu hình CORS
+const whitelist = ["http://localhost:3000", "http://localhost:4000"];
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || whitelist.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
 };
-app.options("*", cors(corsOptions));
-app.use(cors(corsOptions));
-// -end: CORS configuration
 
-// Middleware for parsing JSON and URL-encoded data
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
+// Middleware xử lý JSON và URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// check server
-app.get("/", (req, res) => {
-  res.send("Server is running!");
-});
+// Kiểm tra server
+app.get("/", (req, res) => res.send("Server is running!"));
 
 // Routes
 api_router_v1(app);
 
-// Start server
+// Kết nối đến Database và khởi động server
 database.getConnection((error, connection) => {
   if (error) {
-    console.error("Error connecting to database:", error);
-    return process.exit(1); // Exit if there's a connection error
+    console.error("❌ Lỗi kết nối database:", error.message);
+    process.exit(1);
   }
 
   console.log(
-    `Connected to MySQL database || Host: ${database.config.connectionConfig.host}, Port: ${database.config.connectionConfig.port}`
+    `✅ Kết nối MySQL thành công! Host: ${database.config.connectionConfig.host}, Port: ${database.config.connectionConfig.port}`
   );
-
   connection.release();
 
-  // Start the server
   app.listen(PORT, () => {
-    console.log(`App listening on port ${PORT}`);
+    console.log(
+      `🚀 Server đang chạy trên port ${PORT} | Environment: ${process.env.NODE_ENV}`
+    );
   });
 });
